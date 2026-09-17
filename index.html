@@ -72,21 +72,21 @@ nav button[aria-selected="true"]{background:var(--accent); color:#FFF8EA}
 nav b{font-family:"DM Mono",monospace; font-weight:500}
 
 /* ---------- baraja ---------- */
-.deck{position:relative; height:470px; margin-bottom:16px; touch-action:pan-y}
+.deck{position:relative; height:412px; margin-bottom:16px; touch-action:pan-y}
 .card{position:absolute; inset:0; background:var(--surface); border:1px solid var(--line);
   border-radius:8px; box-shadow:var(--shadow); padding:22px; display:flex; flex-direction:column;
   gap:13px; overflow:hidden; will-change:transform}
-.card.atras{transform:scale(.955) translateY(12px); opacity:.55}
-.card.atras2{transform:scale(.91) translateY(24px); opacity:.3}
+.card.atras{transform:scale(.955) translateY(26px); opacity:.6}
+.card.atras2{transform:scale(.91) translateY(50px); opacity:.35}
 .card .min{font-family:"DM Mono",monospace; font-size:11px; letter-spacing:.1em;
   text-transform:uppercase; color:var(--accent-ink)}
 .card h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:30px;
   line-height:1.08; text-wrap:balance}
 .card .porque{font-size:15px; color:var(--ink-2); line-height:1.5}
-.tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:auto}
+.tags{display:flex; gap:6px; flex-wrap:wrap}
 .tag{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.06em;
   background:var(--surface-2); color:var(--ink-2); padding:3px 8px; border-radius:2px}
-.previa{display:flex; flex-direction:column; gap:3px; font-size:13.5px; color:var(--ink-2);
+.previa{display:flex; flex-direction:column; gap:3px; margin-top:auto; font-size:13.5px; color:var(--ink-2);
   border-top:1px solid var(--line); padding-top:12px}
 .previa b{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.09em;
   text-transform:uppercase; color:var(--ink-3); font-weight:500}
