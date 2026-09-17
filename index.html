@@ -247,6 +247,8 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
   <div id="mercado"></div>
 </div>
 
+<div class="acciones" style="margin-bottom:18px"><button type="button" class="btn fantasma" id="bActualizar">Actualizar la app</button></div>
+
 <footer>Porción A es la menor y porción B lleva un 20 % más de proteína y de almidón; el vegetal es igual en las dos. Los tiempos son de cocina real, con el picado incluido.</footer>
 
 </div>
@@ -268,7 +270,6 @@ const DESPENSA = [
   {k:"miel",     n:"Miel",               g:"b", donde:"", sin:"Panela derretida con una cucharada de agua."},
   {k:"maizena",  n:"Maizena",            g:"b", donde:"", sin:"Harina de arroz. No sirve harina de trigo."},
   {k:"ajopolvo", n:"Ajo en polvo",       g:"b", donde:"", sin:"Ajo fresco, dorado y retirado."},
-  {k:"comino",   n:"Comino",             g:"b", donde:"", sin:"Déjalo por fuera."},
   {k:"ajonjoli", n:"Ajonjolí",           g:"b", donde:"", sin:"Maní picado grueso, que hace un crujiente parecido."},
 
   // --- lo que hay que comprar, en orden de cuánto abre ---
@@ -311,7 +312,7 @@ const MAPA_ING = [
   ["Maní","mani"],                   ["Maizena","maizena"],
   ["Tamari","tamari"],               ["Miso","miso"],
   ["Miel","miel"],                   ["Panela","panela"],
-  ["Sal","sal"],                     ["Comino","comino"],
+  ["Sal","sal"],
   ["Palillos de pincho","palillos"], ["Alga nori","nori"],
   ["Atún enlatado","atunlata"]
 ];
@@ -425,7 +426,7 @@ function pintaMazo(){
     }
     const prev = el("div","previa");
     prev.appendChild(el("b",null, r.mom==="acomp" ? "Lleva" : "El plato entero"));
-    const basico = new Set(["sal","aceite","ajopolvo","comino","maizena","palillos"]);
+    const basico = new Set(["sal","aceite","ajopolvo","maizena","palillos"]);
     prev.appendChild(el("span",null, r.ing
       .filter(x=>{ const k=CLAVE_ING(x.i); return !k || !basico.has(k); })
       .map(x=>x.i.split(",")[0].split(" en ")[0].toLowerCase()).join(" · ")));
@@ -782,6 +783,41 @@ function pintaMomentos(){
 }
 
 cuenta(); pintaMomentos(); pintaMazo();
+/* ---------- botón de actualizar ----------
+   La versión instalada es el nombre del caché; la del servidor sale de sw.js.
+   Así no hay que mantener ningún número a mano en esta página. */
+async function versionInstalada(){
+  if(!window.caches) return null;
+  try{ const ks = await caches.keys(); return ks[0] || null; }catch(e){ return null; }
+}
+async function versionPublicada(){
+  const r = await fetch("sw.js?ts="+Date.now(), {cache:"no-store"});
+  if(!r.ok) throw new Error("sin respuesta");
+  const m = (await r.text()).match(/const V\s*=\s*"([\w-]+)"/);
+  return m ? m[1] : null;
+}
+async function actualizar(btn){
+  const original = btn.textContent;
+  const fin = t => { btn.textContent = t; setTimeout(()=>btn.textContent=original, 3200); };
+  if(!navigator.onLine){ fin("Sin señal ahora"); return; }
+  btn.textContent = "Buscando…";
+  try{
+    const [aqui, alla] = await Promise.all([versionInstalada(), versionPublicada()]);
+    if(aqui && alla && aqui === alla){ fin("Ya tienes la última"); return; }
+    btn.textContent = "Actualizando…";
+    if("serviceWorker" in navigator){
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r=>r.unregister()));
+    }
+    if(window.caches){
+      const ks = await caches.keys();
+      await Promise.all(ks.map(k=>caches.delete(k)));
+    }
+    location.reload();
+  }catch(e){ fin("No se pudo"); }
+}
+document.getElementById("bActualizar").addEventListener("click", e=>actualizar(e.currentTarget));
+
 if("serviceWorker" in navigator){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }
