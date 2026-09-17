@@ -1,0 +1,17 @@
+{
+  "name": "Alimentación — qué cocinamos hoy",
+  "short_name": "Alimentación",
+  "description": "Recetario de sartén y wok con lista de mercado para dos porciones.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F4EE",
+  "theme_color": "#B87514",
+  "lang": "es-CO",
+  "icons": [
+    { "src": "icono-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

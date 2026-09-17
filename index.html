@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#B87514" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14130F" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Alimentación">
+<meta name="description" content="Recetario de sartén y wok: se descarta o se acepta, y la aceptada trae su lista de mercado para dos.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="icon" href="icono-180.png">
+<title>Qué cocinamos hoy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Karla:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F7F4EE; --surface:#FFFFFF; --surface-2:#EFEAE0;
+  --ink:#1F1D18; --ink-2:#5B564A; --ink-3:#8F887A;
+  --line:#DED7C9; --line-2:#C8BFAC;
+  --accent:#B87514; --accent-ink:#8A560C; --accent-soft:#F6E8CE;
+  --si:#4E7A3A; --si-soft:#E4EEDC;
+  --no:#A63D2B; --no-soft:#F6DFDA;
+  --shadow:0 2px 6px rgba(31,29,24,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#14130F; --surface:#1E1C17; --surface-2:#282520;
+    --ink:#EFEADF; --ink-2:#B4AC9B; --ink-3:#847C6D;
+    --line:#332F27; --line-2:#474236;
+    --accent:#E0A44A; --accent-ink:#EFC07A; --accent-soft:#3A2D14;
+    --si:#8FBE74; --si-soft:#22301A; --no:#D9806B; --no-soft:#331B16;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#14130F; --surface:#1E1C17; --surface-2:#282520;
+  --ink:#EFEADF; --ink-2:#B4AC9B; --ink-3:#847C6D;
+  --line:#332F27; --line-2:#474236;
+  --accent:#E0A44A; --accent-ink:#EFC07A; --accent-soft:#3A2D14;
+  --si:#8FBE74; --si-soft:#22301A; --no:#D9806B; --no-soft:#331B16;
+  --shadow:none;
+}
+*{box-sizing:border-box; margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:Karla,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.55; padding:0 16px;
+  padding-block:0 calc(24px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:560px; margin:0 auto}
+.wrap > *{min-width:0}
+
+header{padding-block:26px 14px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+h1{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:34px;
+  line-height:1; letter-spacing:.005em}
+.sub{font-family:"DM Mono",ui-monospace,monospace; font-size:11px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3)}
+
+nav{display:flex; gap:1px; background:var(--line); border:1px solid var(--line);
+  border-radius:3px; overflow:hidden; margin-bottom:22px}
+nav button{flex:1; border:0; border-radius:0; background:var(--surface); color:var(--ink-2);
+  font-family:Karla,sans-serif; font-size:13.5px; font-weight:500; padding:10px 6px; cursor:pointer}
+nav button[aria-selected="true"]{background:var(--accent); color:#FFF8EA}
+:root[data-theme="dark"] nav button[aria-selected="true"]{color:#14130F}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) nav button[aria-selected="true"]{color:#14130F} }
+nav b{font-family:"DM Mono",monospace; font-weight:500}
+
+/* ---------- baraja ---------- */
+.deck{position:relative; height:470px; margin-bottom:16px; touch-action:pan-y}
+.card{position:absolute; inset:0; background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; box-shadow:var(--shadow); padding:22px; display:flex; flex-direction:column;
+  gap:13px; overflow:hidden; will-change:transform}
+.card.atras{transform:scale(.955) translateY(12px); opacity:.55}
+.card.atras2{transform:scale(.91) translateY(24px); opacity:.3}
+.card .min{font-family:"DM Mono",monospace; font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--accent-ink)}
+.card h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:30px;
+  line-height:1.08; text-wrap:balance}
+.card .porque{font-size:15px; color:var(--ink-2); line-height:1.5}
+.tags{display:flex; gap:6px; flex-wrap:wrap; margin-top:auto}
+.tag{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.06em;
+  background:var(--surface-2); color:var(--ink-2); padding:3px 8px; border-radius:2px}
+.previa{display:flex; flex-direction:column; gap:3px; font-size:13.5px; color:var(--ink-2);
+  border-top:1px solid var(--line); padding-top:12px}
+.previa b{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500}
+.yala{background:var(--accent-soft); border-left:3px solid var(--accent); padding:9px 12px;
+  border-radius:0 3px 3px 0; font-size:13.5px; color:var(--ink-2)}
+.yala b{color:var(--ink)}
+.sello{position:absolute; top:22px; font-family:"DM Mono",monospace; font-size:20px;
+  letter-spacing:.14em; padding:5px 13px; border:2.5px solid currentColor; border-radius:4px;
+  opacity:0; pointer-events:none; text-transform:uppercase}
+.sello.si{left:22px; color:var(--si); transform:rotate(-13deg)}
+.sello.no{right:22px; color:var(--no); transform:rotate(13deg)}
+
+.mandos{display:flex; gap:12px; justify-content:center; align-items:center; margin-bottom:26px}
+.mando{width:62px; height:62px; border-radius:50%; border:1.5px solid var(--line-2);
+  background:var(--surface); font-size:25px; cursor:pointer; display:flex;
+  align-items:center; justify-content:center; padding:0; color:var(--ink-2)}
+.mando.no{color:var(--no); border-color:var(--no)}
+.mando.si{color:var(--si); border-color:var(--si); width:70px; height:70px; font-size:29px}
+.mando.chico{width:46px; height:46px; font-size:17px}
+.pista{text-align:center; font-size:13px; color:var(--ink-3); margin-bottom:8px}
+
+/* ---------- receta ---------- */
+.hoja{background:var(--surface); border:1px solid var(--line); border-radius:6px;
+  padding:22px; display:flex; flex-direction:column; gap:20px; box-shadow:var(--shadow)}
+.hoja h2{font-family:"Instrument Serif",Georgia,serif; font-weight:400; font-size:30px; line-height:1.1}
+.bloque{display:flex; flex-direction:column; gap:9px}
+.bloque h3{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500}
+table{width:100%; border-collapse:collapse; font-size:14.5px}
+th{font-family:"DM Mono",monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-3); font-weight:500; text-align:right; padding:0 0 6px}
+th:first-child{text-align:left}
+td{padding:6px 0; border-top:1px solid var(--line); vertical-align:top}
+td.num{text-align:right; font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums;
+  white-space:nowrap; padding-left:10px}
+td .desp{font-family:"DM Mono",monospace; font-size:9.5px; letter-spacing:.07em; color:var(--accent-ink);
+  border:1px solid currentColor; border-radius:2px; padding:0 4px; margin-left:6px; white-space:nowrap}
+ol.pasos{padding-left:20px; display:flex; flex-direction:column; gap:9px; font-size:15px}
+ol.pasos li{padding-left:3px}
+.consejo{background:var(--si-soft); border-left:3px solid var(--si); padding:12px 14px;
+  border-radius:0 3px 3px 0; font-size:14.5px; color:var(--ink-2)}
+.alerta{background:var(--no-soft); border-left:3px solid var(--no); padding:12px 14px;
+  border-radius:0 3px 3px 0; font-size:14.5px; color:var(--ink-2)}
+.correcciones{background:var(--accent-soft); border-left:3px solid var(--accent); padding:14px;
+  border-radius:0 3px 3px 0; display:flex; flex-direction:column; gap:8px; font-size:14.5px; color:var(--ink-2)}
+.correcciones b{color:var(--ink)}
+
+button.btn{font-family:Karla,sans-serif; font-size:14.5px; font-weight:600; padding:10px 18px;
+  border-radius:3px; border:1px solid var(--accent); background:var(--accent); color:#FFF8EA; cursor:pointer}
+:root[data-theme="dark"] button.btn{color:#14130F}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) button.btn{color:#14130F} }
+button.fantasma{background:transparent; color:var(--ink-2); border:1px solid var(--line-2)}
+.acciones{display:flex; gap:9px; flex-wrap:wrap}
+
+/* ---------- semana y mercado ---------- */
+.lista{display:flex; flex-direction:column; gap:10px}
+.fila{background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:14px 16px;
+  display:flex; gap:12px; align-items:flex-start}
+.fila .txt{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; cursor:pointer}
+.fila .txt b{font-size:16px; font-weight:600}
+.fila .txt span{font-size:13px; color:var(--ink-3); font-family:"DM Mono",monospace}
+.estrellas{font-size:14px; color:var(--accent); letter-spacing:1px}
+.grupo{display:flex; flex-direction:column; gap:7px; margin-bottom:22px}
+.grupo > h3{font-family:"DM Mono",monospace; font-size:10.5px; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500; border-bottom:1px solid var(--line-2);
+  padding-bottom:6px; margin-bottom:3px}
+.item{display:flex; gap:10px; align-items:baseline; font-size:15px; padding:3px 0}
+.item input{width:17px; height:17px; accent-color:var(--accent); flex:none; position:relative; top:2px}
+.item .c{margin-left:auto; font-family:"DM Mono",monospace; font-size:13.5px;
+  font-variant-numeric:tabular-nums; color:var(--ink-2); white-space:nowrap; padding-left:10px}
+.item.ok label{opacity:.45; text-decoration:line-through}
+.vacio{font-size:15px; color:var(--ink-3); font-style:italic; padding:22px 0}
+.nota{font-size:14px; color:var(--ink-2); margin-bottom:18px}
+
+/* ---------- realimentación ---------- */
+.fb{display:flex; flex-direction:column; gap:14px}
+.estrellabtn{display:flex; gap:7px}
+.estrellabtn button{width:42px; height:42px; border-radius:3px; border:1px solid var(--line-2);
+  background:var(--surface); font-size:19px; cursor:pointer; padding:0; color:var(--ink-3)}
+.estrellabtn button[aria-pressed="true"]{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-ink)}
+.chips{display:flex; gap:7px; flex-wrap:wrap}
+.chip{font-family:Karla,sans-serif; font-size:13.5px; padding:7px 12px; border-radius:20px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#FFF8EA}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#14130F}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#14130F} }
+textarea{font-family:Karla,sans-serif; font-size:15px; padding:10px 12px; border:1px solid var(--line-2);
+  border-radius:3px; background:var(--ground); color:var(--ink); width:100%; min-height:70px; resize:vertical}
+label.campo{display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:var(--ink-2)}
+button:focus-visible,textarea:focus-visible,.txt:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; font-size:12.5px; color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Qué cocinamos hoy</h1>
+  <span class="sub">sartén y wok · sin horno · dos porciones</span>
+</header>
+
+<nav role="tablist">
+  <button role="tab" id="tab-descubrir" aria-selected="true">Descubrir</button>
+  <button role="tab" id="tab-semana">Mi semana <b id="nSemana"></b></button>
+  <button role="tab" id="tab-mercado">Mercado</button>
+</nav>
+
+<div id="v-descubrir">
+  <div class="deck" id="deck"></div>
+  <div class="mandos">
+    <button class="mando no" id="bNo" title="No me provoca" aria-label="Descartar">✕</button>
+    <button class="mando chico" id="bLuego" title="Ahora no, muéstramela después" aria-label="Después">↺</button>
+    <button class="mando si" id="bSi" title="Esta sí" aria-label="Aceptar">✓</button>
+  </div>
+  <p class="pista">Arrastra la tarjeta, o usa los botones. Izquierda la descarta para siempre; el circulito la manda al final del mazo.</p>
+</div>
+
+<div id="v-receta" hidden></div>
+
+<div id="v-semana" hidden>
+  <p class="nota">Las que aceptaste. Toca una para ver la receta o para contar cómo quedó después de cocinarla.</p>
+  <div class="lista" id="listaSemana"></div>
+  <div class="acciones" style="margin-top:18px">
+    <button class="btn fantasma" id="bRechazadas">Ver descartadas</button>
+  </div>
+</div>
+
+<div id="v-mercado" hidden>
+  <p class="nota">Suma de todo lo que aceptaste, con las dos porciones ya sumadas. Cada receta rinde <b>una cena para dos</b>: nada de cocinar para recalentar.</p>
+  <div id="mercado"></div>
+</div>
+
+<footer>Porción A es la menor y porción B lleva un 20 % más de proteína y de almidón; el vegetal es igual en las dos. Los tiempos son de cocina real, con el picado incluido.</footer>
+
+</div>
+
+<script src="recetas.js"></script>
+<script>
+const K = {rech:"alim.rechazadas", sem:"alim.semana", fb:"alim.feedback", comp:"alim.comprado"};
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+const el=(t,c,x)=>{const n=document.createElement(t); if(c)n.className=c; if(x!=null)n.textContent=x; return n;};
+const receta = id => RECETAS.find(r=>r.id===id);
+
+let rechazadas = store.get(K.rech,[]);
+let semana     = store.get(K.sem,[]);
+let feedback   = store.get(K.fb,{});
+let comprado   = store.get(K.comp,{});
+let mazo = [];
+
+function rearmaMazo(){
+  mazo = RECETAS.filter(r=> !rechazadas.includes(r.id) && !semana.includes(r.id))
+                .map(r=>r.id);
+  for(let i=mazo.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [mazo[i],mazo[j]]=[mazo[j],mazo[i]]; }
+  // las que ya cocinaste y te gustaron vuelven, pero no de primeras
+  mazo.sort((a,b)=>{ const fa=feedback[a], fb_=feedback[b];
+    return (fa?1:0)-(fb_?1:0); });
+}
+rearmaMazo();
+
+/* ---------- pestañas ---------- */
+const vistas = {descubrir:"v-descubrir", semana:"v-semana", mercado:"v-mercado"};
+function abre(v){
+  Object.entries(vistas).forEach(([k,id])=>{
+    document.getElementById(id).hidden = k!==v;
+    document.getElementById("tab-"+k).setAttribute("aria-selected", k===v);
+  });
+  document.getElementById("v-receta").hidden = true;
+  if(v==="semana") pintaSemana();
+  if(v==="mercado") pintaMercado();
+  window.scrollTo({top:0});
+}
+Object.keys(vistas).forEach(k=> document.getElementById("tab-"+k).addEventListener("click",()=>abre(k)));
+
+/* ---------- baraja ---------- */
+const $deck = document.getElementById("deck");
+function estrellas(n){ return "★".repeat(n)+"☆".repeat(5-n); }
+
+function pintaMazo(){
+  $deck.textContent = "";
+  if(!mazo.length){
+    const v = el("div","card");
+    v.appendChild(el("h2",null,"No queda nada por mostrar"));
+    v.appendChild(el("p","porque","Aceptaste o descartaste las 35. Puedes recuperar las descartadas desde «Mi semana», o vaciar la semana para que vuelvan a aparecer."));
+    $deck.appendChild(v);
+    return;
+  }
+  mazo.slice(0,3).reverse().forEach((id,idx,arr)=>{
+    const r = receta(id);
+    const pos = arr.length-1-idx;
+    const c = el("div","card"+(pos===1?" atras":pos===2?" atras2":""));
+    c.dataset.id = id;
+    c.appendChild(el("div","min", r.min+" min · "+r.base));
+    c.appendChild(el("h2",null,r.n));
+    const f = feedback[id];
+    if(f){
+      const y = el("div","yala");
+      y.appendChild(el("b",null,"Ya la cocinaste: "));
+      y.appendChild(document.createTextNode(estrellas(f.nota)+(f.tags&&f.tags.length? " — "+f.tags.map(t=>AJUSTES[t][0].toLowerCase()).join(", ") : "")));
+      c.appendChild(y);
+    }
+    c.appendChild(el("p","porque", r.porque));
+    const prev = el("div","previa");
+    prev.appendChild(el("b",null,"Lleva"));
+    prev.appendChild(el("span",null, r.ing.slice(0,5).map(x=>x.i.split(",")[0].toLowerCase()).join(" · ")));
+    c.appendChild(prev);
+    const tg = el("div","tags");
+    r.tag.forEach(t=> tg.appendChild(el("span","tag",t)));
+    c.appendChild(tg);
+    const s1=el("div","sello si","Sí"), s2=el("div","sello no","No");
+    c.append(s1,s2);
+    if(pos===0) arrastrable(c);
+    $deck.appendChild(c);
+  });
+}
+
+function arrastrable(c){
+  let x0=0, x=0, activo=false;
+  const si=c.querySelector(".sello.si"), no=c.querySelector(".sello.no");
+  c.addEventListener("pointerdown",e=>{
+    if(e.target.closest("button")) return;
+    activo=true; x0=e.clientX; c.setPointerCapture(e.pointerId); c.style.transition="none";
+  });
+  c.addEventListener("pointermove",e=>{
+    if(!activo) return;
+    x=e.clientX-x0;
+    c.style.transform="translateX("+x+"px) rotate("+(x/22)+"deg)";
+    si.style.opacity = x>25 ? Math.min(1,(x-25)/70) : 0;
+    no.style.opacity = x<-25 ? Math.min(1,(-x-25)/70) : 0;
+  });
+  const soltar = ()=>{
+    if(!activo) return; activo=false;
+    c.style.transition="transform .28s ease, opacity .28s ease";
+    if(x>90) vuela(c,1);
+    else if(x<-90) vuela(c,-1);
+    else { c.style.transform=""; si.style.opacity=0; no.style.opacity=0; }
+    x=0;
+  };
+  c.addEventListener("pointerup",soltar);
+  c.addEventListener("pointercancel",soltar);
+}
+
+function vuela(c,dir){
+  c.style.transition="transform .3s ease, opacity .3s ease";
+  c.style.transform="translateX("+(dir*520)+"px) rotate("+(dir*22)+"deg)";
+  c.style.opacity="0";
+  const id = c.dataset.id;
+  setTimeout(()=>{ dir>0 ? acepta(id) : descarta(id); }, 240);
+}
+
+function acepta(id){
+  mazo = mazo.filter(x=>x!==id);
+  if(!semana.includes(id)){ semana.push(id); store.set(K.sem,semana); }
+  cuenta(); abreReceta(id);
+}
+function descarta(id){
+  mazo = mazo.filter(x=>x!==id);
+  if(!rechazadas.includes(id)){ rechazadas.push(id); store.set(K.rech,rechazadas); }
+  pintaMazo();
+}
+function alFinal(){
+  if(!mazo.length) return;
+  mazo.push(mazo.shift()); pintaMazo();
+}
+document.getElementById("bSi").addEventListener("click",()=>{ if(mazo.length) acepta(mazo[0]); });
+document.getElementById("bNo").addEventListener("click",()=>{ if(mazo.length) descarta(mazo[0]); });
+document.getElementById("bLuego").addEventListener("click", alFinal);
+
+function cuenta(){
+  document.getElementById("nSemana").textContent = semana.length ? "("+semana.length+")" : "";
+}
+
+/* ---------- hoja de receta ---------- */
+const $rec = document.getElementById("v-receta");
+function abreReceta(id){
+  const r = receta(id), f = feedback[id];
+  Object.values(vistas).forEach(v=> document.getElementById(v).hidden=true);
+  $rec.hidden=false; $rec.textContent="";
+
+  const h = el("div","hoja");
+  h.appendChild(el("div","min", r.min+" min · dos porciones"));
+  h.appendChild(el("h2",null,r.n));
+  h.appendChild(el("p","porque",r.porque));
+
+  if(f && f.tags && f.tags.length){
+    const co = el("div","correcciones");
+    const t = el("p"); t.appendChild(el("b",null,"Correcciones de la vez pasada. "));
+    t.appendChild(document.createTextNode("La calificaste "+estrellas(f.nota)+"."));
+    co.appendChild(t);
+    f.tags.forEach(k=>{ if(AJUSTES[k]) co.appendChild(el("p",null,"· "+AJUSTES[k][1])); });
+    if(f.nota_libre) co.appendChild(el("p",null,"· Tu nota: "+f.nota_libre));
+    h.appendChild(co);
+  }
+
+  const bi = el("div","bloque");
+  bi.appendChild(el("h3",null,"Ingredientes"));
+  const tb = el("table");
+  const thead = el("thead"), trh = el("tr");
+  ["Ingrediente","Porción A","Porción B"].forEach(x=> trh.appendChild(el("th",null,x)));
+  thead.appendChild(trh); tb.appendChild(thead);
+  const tbody = el("tbody");
+  r.ing.forEach(x=>{
+    const tr = el("tr");
+    const td = el("td"); td.appendChild(document.createTextNode(x.i));
+    if(x.d) td.appendChild(el("span","desp","despensa"));
+    tr.appendChild(td);
+    tr.appendChild(el("td","num", x.a+" "+x.u));
+    tr.appendChild(el("td","num", x.b+" "+x.u));
+    tbody.appendChild(tr);
+  });
+  tb.appendChild(tbody); bi.appendChild(tb); h.appendChild(bi);
+
+  const bp = el("div","bloque");
+  bp.appendChild(el("h3",null,"Preparación"));
+  const ol = el("ol","pasos");
+  r.pasos.forEach(p=> ol.appendChild(el("li",null,p)));
+  bp.appendChild(ol); h.appendChild(bp);
+
+  if(r.crispy) h.appendChild(el("div","consejo","Para que quede crocante: "+r.crispy));
+  if(r.ojo) h.appendChild(el("div","alerta",r.ojo));
+
+  h.appendChild(formFeedback(id));
+
+  const acc = el("div","acciones");
+  const volver = el("button","btn fantasma","Volver al mazo");
+  volver.addEventListener("click",()=>{ rearmaMazoSuave(); abre("descubrir"); pintaMazo(); });
+  const aMer = el("button","btn","Ver lista de mercado");
+  aMer.addEventListener("click",()=>abre("mercado"));
+  acc.append(aMer,volver);
+  h.appendChild(acc);
+
+  $rec.appendChild(h);
+  window.scrollTo({top:0});
+}
+function rearmaMazoSuave(){
+  mazo = mazo.filter(id=> !rechazadas.includes(id) && !semana.includes(id));
+  if(!mazo.length) rearmaMazo();
+}
+
+/* ---------- realimentación ---------- */
+function formFeedback(id){
+  const f = feedback[id] || {nota:0, tags:[], nota_libre:""};
+  const caja = el("div","bloque fb");
+  caja.appendChild(el("h3",null,"Ya la cocinaste: ¿cómo quedó?"));
+  caja.appendChild(el("p","porque","Lo que marques aquí vuelve como corrección la próxima vez que esta receta aparezca."));
+
+  let nota = f.nota;
+  const est = el("div","estrellabtn");
+  const botones=[];
+  for(let i=1;i<=5;i++){
+    const b=el("button",null,"★"); b.type="button";
+    b.setAttribute("aria-pressed", i<=nota);
+    b.setAttribute("aria-label", i+" de 5");
+    b.addEventListener("click",()=>{ nota=i; botones.forEach((x,k)=>x.setAttribute("aria-pressed",k<i)); });
+    botones.push(b); est.appendChild(b);
+  }
+  caja.appendChild(est);
+
+  const tags = new Set(f.tags||[]);
+  const chips = el("div","chips");
+  Object.entries(AJUSTES).forEach(([k,[et]])=>{
+    const c=el("button","chip",et); c.type="button";
+    c.setAttribute("aria-pressed", tags.has(k));
+    c.addEventListener("click",()=>{
+      tags.has(k)?tags.delete(k):tags.add(k);
+      c.setAttribute("aria-pressed", tags.has(k));
+    });
+    chips.appendChild(c);
+  });
+  caja.appendChild(chips);
+
+  const lab = el("label","campo"); lab.htmlFor="fb_"+id;
+  lab.appendChild(document.createTextNode("Qué cambiarías, o qué no conseguiste"));
+  const ta = el("textarea"); ta.id="fb_"+id; ta.value=f.nota_libre||"";
+  ta.placeholder="Ej.: no conseguí tamari, el apio quedó blando, le sobró jengibre…";
+  lab.appendChild(ta); caja.appendChild(lab);
+
+  const g = el("button","btn","Guardar cómo quedó");
+  g.type="button";
+  g.addEventListener("click",()=>{
+    if(!nota){ g.textContent="Ponle estrellas primero"; setTimeout(()=>g.textContent="Guardar cómo quedó",1600); return; }
+    feedback[id] = {nota, tags:[...tags], nota_libre:ta.value.trim(), fecha:new Date().toISOString()};
+    store.set(K.fb,feedback);
+    g.textContent="Guardado";
+    setTimeout(()=>g.textContent="Guardar cómo quedó",1600);
+  });
+  caja.appendChild(g);
+  return caja;
+}
+
+/* ---------- mi semana ---------- */
+function pintaSemana(){
+  const $l = document.getElementById("listaSemana");
+  $l.textContent="";
+  if(!semana.length){ $l.appendChild(el("p","vacio","Todavía no has aceptado ninguna receta.")); return; }
+  semana.forEach(id=>{
+    const r = receta(id), f = feedback[id];
+    const fi = el("div","fila");
+    const t = el("div","txt"); t.tabIndex=0;
+    t.appendChild(el("b",null,r.n));
+    t.appendChild(el("span",null, r.min+" min · "+r.base));
+    if(f) t.appendChild(el("span","estrellas", estrellas(f.nota)));
+    t.addEventListener("click",()=>abreReceta(id));
+    t.addEventListener("keydown",e=>{ if(e.key==="Enter") abreReceta(id); });
+    const q = el("button","btn fantasma","Quitar"); q.type="button";
+    q.addEventListener("click",()=>{
+      semana = semana.filter(x=>x!==id); store.set(K.sem,semana);
+      rearmaMazo(); cuenta(); pintaSemana(); pintaMazo();
+    });
+    fi.append(t,q); $l.appendChild(fi);
+  });
+}
+
+document.getElementById("bRechazadas").addEventListener("click",()=>{
+  const $l = document.getElementById("listaSemana");
+  if(!rechazadas.length){ alert("No has descartado ninguna."); return; }
+  const nombres = rechazadas.map(id=>receta(id).n).join("\n· ");
+  if(confirm("Descartadas ("+rechazadas.length+"):\n\n· "+nombres+"\n\n¿Devolverlas todas al mazo?")){
+    rechazadas=[]; store.set(K.rech,rechazadas); rearmaMazo(); pintaMazo(); pintaSemana();
+  }
+});
+
+/* ---------- mercado ---------- */
+function pintaMercado(){
+  const $m = document.getElementById("mercado");
+  $m.textContent="";
+  if(!semana.length){ $m.appendChild(el("p","vacio","Acepta recetas y aquí se arma la lista sola.")); return; }
+
+  const suma = {};
+  semana.forEach(id=>{
+    receta(id).ing.forEach(x=>{
+      const clave = x.i+"|"+x.u+"|"+(x.d?1:0);
+      suma[clave] = (suma[clave]||0) + x.a + x.b;
+    });
+  });
+
+  const grupos = {0:[],1:[]};
+  Object.entries(suma).forEach(([clave,cant])=>{
+    const [i,u,d] = clave.split("|");
+    grupos[d].push({i,u,cant,clave});
+  });
+  const titulos = {0:["En el barrio","Tienda, fruver y carnicería. Se compra para los días que vas a cocinar."],
+                   1:["Despensa","Se compra una vez y dura meses. Tamari, miso y fideos de arroz no están en toda tienda: una sola vuelta a un supermercado grande o a una tienda asiática resuelve el año."]};
+
+  [0,1].forEach(d=>{
+    if(!grupos[d].length) return;
+    const g = el("div","grupo");
+    g.appendChild(el("h3",null,titulos[d][0]));
+    g.appendChild(el("p","nota",titulos[d][1]));
+    grupos[d].sort((a,b)=>a.i.localeCompare(b.i,"es")).forEach(x=>{
+      const it = el("div","item"+(comprado[x.clave]?" ok":""));
+      const cb = el("input"); cb.type="checkbox"; cb.id="m_"+btoa(unescape(encodeURIComponent(x.clave))).replace(/=/g,"");
+      cb.checked = !!comprado[x.clave];
+      cb.addEventListener("change",()=>{
+        comprado[x.clave]=cb.checked; store.set(K.comp,comprado);
+        it.classList.toggle("ok",cb.checked);
+      });
+      const lb = el("label",null,x.i); lb.htmlFor=cb.id;
+      const c = el("span","c", (Math.round(x.cant*10)/10)+" "+x.u);
+      it.append(cb,lb,c); g.appendChild(it);
+    });
+    $m.appendChild(g);
+  });
+
+  const acc = el("div","acciones");
+  const cop = el("button","btn","Copiar la lista"); cop.type="button";
+  cop.addEventListener("click", async ()=>{
+    const txt = [0,1].map(d=> grupos[d].length
+      ? titulos[d][0].toUpperCase()+"\n"+grupos[d].map(x=>"· "+x.i+" — "+(Math.round(x.cant*10)/10)+" "+x.u).join("\n")
+      : "").filter(Boolean).join("\n\n");
+    try{ await navigator.clipboard.writeText(txt); cop.textContent="Copiada"; }
+    catch(e){ cop.textContent="No se pudo copiar"; }
+    setTimeout(()=>cop.textContent="Copiar la lista",1600);
+  });
+  const lim = el("button","btn fantasma","Destildar todo"); lim.type="button";
+  lim.addEventListener("click",()=>{ comprado={}; store.set(K.comp,comprado); pintaMercado(); });
+  acc.append(cop,lim);
+  $m.appendChild(acc);
+}
+
+cuenta(); pintaMazo();
+if("serviceWorker" in navigator){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
