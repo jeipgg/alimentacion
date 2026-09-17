@@ -106,6 +106,13 @@ nav b{font-family:"DM Mono",monospace; font-weight:500}
 .mando.no{color:var(--no); border-color:var(--no)}
 .mando.si{color:var(--si); border-color:var(--si); width:70px; height:70px; font-size:29px}
 .mando.chico{width:46px; height:46px; font-size:17px}
+.momentos{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:9px}
+.momentos button{font-family:Karla,sans-serif; font-size:13.5px; padding:7px 13px; border-radius:20px;
+  border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2); cursor:pointer}
+.momentos button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:#FFF8EA}
+:root[data-theme="dark"] .momentos button[aria-pressed="true"]{color:#14130F}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .momentos button[aria-pressed="true"]{color:#14130F} }
+#porHora{font-size:13px; color:var(--ink-3); margin-bottom:12px}
 .pista{text-align:center; font-size:13px; color:var(--ink-3); margin-bottom:8px}
 
 /* ---------- receta ---------- */
@@ -209,6 +216,8 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
 </nav>
 
 <div id="v-descubrir">
+  <div class="momentos" id="momentos"></div>
+  <p class="porque" id="porHora"></p>
   <div class="deck" id="deck"></div>
   <div class="mandos">
     <button class="mando no" id="bNo" title="No me provoca" aria-label="Descartar">✕</button>
@@ -297,16 +306,29 @@ function faltantes(r){
 }
 let mazo = [];
 
+/* Antes de mediodía se cocina para el almuerzo; de ahí en adelante, para la cena. */
+const MOMENTOS = [["almuerzo","Almuerzo"],["cena","Cena"],["desayuno","Desayuno"],["todo","Todo"]];
+function momentoPorHora(){ return new Date().getHours() < 12 ? "almuerzo" : "cena"; }
+let modo = momentoPorHora();
+
+function entra(r){
+  if(modo==="todo") return true;
+  if(modo==="desayuno") return r.mom==="desayuno";
+  return r.mom===modo || r.mom==="ambos" || r.mom==="acomp";
+}
+
 function rearmaMazo(){
-  mazo = RECETAS.filter(r=> !rechazadas.includes(r.id) && !semana.includes(r.id))
+  mazo = RECETAS.filter(r=> !rechazadas.includes(r.id) && !semana.includes(r.id) && entra(r))
                 .map(r=>r.id);
   for(let i=mazo.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [mazo[i],mazo[j]]=[mazo[j],mazo[i]]; }
   // primero lo que puede cocinar hoy; las ya cocinadas, de últimas
   mazo.sort((a,b)=>{
     const ra=receta(a), rb=receta(b);
-    const d = faltantes(ra).length - faltantes(rb).length;
+    const ac = (ra.mom==="acomp"?1:0) - (rb.mom==="acomp"?1:0);   // los platos antes que los acompañamientos
+    if(ac) return ac;
+    const d = faltantes(ra).length - faltantes(rb).length;         // lo cocinable hoy, primero
     if(d) return d;
-    return (feedback[a]?1:0) - (feedback[b]?1:0);
+    return (feedback[a]?1:0) - (feedback[b]?1:0);                  // lo ya cocinado, de últimas
   });
 }
 rearmaMazo();
@@ -335,7 +357,7 @@ function pintaMazo(){
   if(!mazo.length){
     const v = el("div","card");
     v.appendChild(el("h2",null,"No queda nada por mostrar"));
-    v.appendChild(el("p","porque","Aceptaste o descartaste las 35. Puedes recuperar las descartadas desde «Mi semana», o vaciar la semana para que vuelvan a aparecer."));
+    v.appendChild(el("p","porque","No queda nada en este momento del día. Prueba otro botón de arriba, o recupera las descartadas desde «Mi semana»."));
     $deck.appendChild(v);
     return;
   }
@@ -402,6 +424,8 @@ function arrastrable(c){
   c.addEventListener("pointercancel",soltar);
 }
 
+function refresca(){ pintaMomentos(); pintaMazo(); }
+
 function vuela(c,dir){
   c.style.transition="transform .3s ease, opacity .3s ease";
   c.style.transform="translateX("+(dir*520)+"px) rotate("+(dir*22)+"deg)";
@@ -418,7 +442,7 @@ function acepta(id){
 function descarta(id){
   mazo = mazo.filter(x=>x!==id);
   if(!rechazadas.includes(id)){ rechazadas.push(id); store.set(K.rech,rechazadas); }
-  pintaMazo();
+  refresca();
 }
 function alFinal(){
   if(!mazo.length) return;
@@ -678,7 +702,25 @@ function pintaMercado(){
   $m.appendChild(acc);
 }
 
-cuenta(); pintaMazo();
+function pintaMomentos(){
+  const $m = document.getElementById("momentos");
+  $m.textContent="";
+  MOMENTOS.forEach(([k,et])=>{
+    const b = el("button",null,et); b.type="button";
+    b.setAttribute("aria-pressed", k===modo);
+    b.addEventListener("click",()=>{ modo=k; rearmaMazo(); pintaMomentos(); pintaMazo(); });
+    $m.appendChild(b);
+  });
+  const h = new Date().getHours();
+  const hh = String(h).padStart(2,"0")+":"+String(new Date().getMinutes()).padStart(2,"0");
+  const auto = momentoPorHora();
+  const cuantas = mazo.length;
+  document.getElementById("porHora").textContent =
+    (modo===auto ? "Son las "+hh+", así que te estoy mostrando "+(auto==="almuerzo"?"almuerzos":"cenas")+". " : "")
+    + cuantas + (cuantas===1?" receta en el mazo.":" recetas en el mazo.");
+}
+
+cuenta(); pintaMomentos(); pintaMazo();
 if("serviceWorker" in navigator){
   addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 }

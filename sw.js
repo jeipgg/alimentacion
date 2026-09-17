@@ -1,5 +1,5 @@
 // Sirve la app sin señal. Subir la versión obliga al teléfono a actualizarse.
-const V = "alim-v3";
+const V = "alim-v4";
 const SHELL = ["./", "index.html", "recetas.js", "manifest.webmanifest", "icono-180.png", "icono-512.png"];
 
 self.addEventListener("install", e => {
