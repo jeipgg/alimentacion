@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#14130F" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Alimentación">
-<meta name="description" content="Recetario de sartén y wok: se descarta o se acepta, y la aceptada trae su lista de mercado para dos.">
+<meta name="description" content="Recetario de sartén: se descarta o se acepta, y la aceptada trae su lista de mercado para dos.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icono-180.png">
 <link rel="icon" href="icono-180.png">
@@ -158,6 +158,18 @@ button.fantasma{background:transparent; color:var(--ink-2); border:1px solid var
 .item .c{margin-left:auto; font-family:"DM Mono",monospace; font-size:13.5px;
   font-variant-numeric:tabular-nums; color:var(--ink-2); white-space:nowrap; padding-left:10px}
 .item.ok label{opacity:.45; text-decoration:line-through}
+.falta{background:var(--surface-2); border-left:3px solid var(--line-2); padding:8px 11px;
+  border-radius:0 3px 3px 0; font-size:13px; color:var(--ink-2)}
+.falta b{color:var(--accent-ink); font-family:"DM Mono",monospace; font-size:12px}
+.desp-item{background:var(--surface); border:1px solid var(--line); border-radius:4px;
+  padding:13px 15px; display:flex; gap:12px; align-items:flex-start; margin-bottom:8px}
+.desp-item input{width:19px; height:19px; accent-color:var(--accent); flex:none; margin-top:2px}
+.desp-item .d{display:flex; flex-direction:column; gap:3px; min-width:0}
+.desp-item .d b{font-size:15.5px}
+.desp-item .d span{font-size:13px; color:var(--ink-2)}
+.desp-item .d em{font-style:normal; font-family:"DM Mono",monospace; font-size:11px;
+  letter-spacing:.07em; color:var(--accent-ink)}
+.desp-item.ok{opacity:.6}
 .vacio{font-size:15px; color:var(--ink-3); font-style:italic; padding:22px 0}
 .nota{font-size:14px; color:var(--ink-2); margin-bottom:18px}
 
@@ -186,13 +198,14 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
 
 <header>
   <h1>Qué cocinamos hoy</h1>
-  <span class="sub">sartén y wok · sin horno · dos porciones</span>
+  <span class="sub">solo sartén · sin horno · dos porciones</span>
 </header>
 
 <nav role="tablist">
   <button role="tab" id="tab-descubrir" aria-selected="true">Descubrir</button>
   <button role="tab" id="tab-semana">Mi semana <b id="nSemana"></b></button>
   <button role="tab" id="tab-mercado">Mercado</button>
+  <button role="tab" id="tab-despensa">Despensa</button>
 </nav>
 
 <div id="v-descubrir">
@@ -215,6 +228,11 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
   </div>
 </div>
 
+<div id="v-despensa" hidden>
+  <p class="nota">Seis frascos, y con eso queda cubierto todo el recetario. <b>No los compres de una.</b> Marca lo que ya tienes y las recetas que puedes hacer hoy suben al principio del mazo; para las demás, la receta te dice con qué reemplazar mientras tanto.</p>
+  <div id="despensa"></div>
+</div>
+
 <div id="v-mercado" hidden>
   <p class="nota">Suma de todo lo que aceptaste, con las dos porciones ya sumadas. Cada receta rinde <b>una cena para dos</b>: nada de cocinar para recalentar.</p>
   <div id="mercado"></div>
@@ -226,7 +244,38 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
 
 <script src="recetas.js"></script>
 <script>
-const K = {rech:"alim.rechazadas", sem:"alim.semana", fb:"alim.feedback", comp:"alim.comprado"};
+const K = {rech:"alim.rechazadas", sem:"alim.semana", fb:"alim.feedback",
+           comp:"alim.comprado", desp:"alim.despensa"};
+
+/* Los seis frascos que cubren todo el recetario, en el orden en que conviene comprarlos. */
+const DESPENSA = [
+  {k:"tamari",  n:"Tamari o salsa de soya sin gluten", orden:"Primero",
+   donde:"Supermercado grande, sección internacional. Un frasco dura casi un año.",
+   sin:"Sal y un chorrito de vinagre blanco al final. Queda distinto, pero el plato funciona."},
+  {k:"vinagre", n:"Vinagre de arroz", orden:"Segundo",
+   donde:"Supermercado grande, al lado del anterior.",
+   sin:"Vinagre blanco, la mitad de la cantidad: es bastante más fuerte."},
+  {k:"aceiteaj",n:"Aceite de ajonjolí", orden:"Segundo",
+   donde:"Supermercado grande. Se usa por gotas, dura muchísimo.",
+   sin:"Déjalo por fuera. No tiene reemplazo y el plato se defiende igual."},
+  {k:"miso",    n:"Miso", orden:"Después",
+   donde:"Tienda asiática o supermercado grande. En la nevera dura meses.",
+   sin:"Una cucharada más de tamari y media cucharadita de miel."},
+  {k:"fideos",  n:"Fideos de arroz", orden:"Después",
+   donde:"Supermercado grande o tienda asiática. Secos, duran años.",
+   sin:"Arroz. Deja de ser el mismo plato, pero es el mismo salteado."},
+  {k:"nori",    n:"Alga nori en láminas", orden:"Al final",
+   donde:"Tienda asiática. Solo hace falta para los onigiris.",
+   sin:"Sin alga: bolas de arroz sueltas. Se comen igual de rico."}
+];
+const CLAVE_ING = i =>
+  i.startsWith("Tamari") ? "tamari" :
+  i.startsWith("Vinagre de arroz") ? "vinagre" :
+  i.startsWith("Aceite de ajonjolí") ? "aceiteaj" :
+  i.startsWith("Miso") ? "miso" :
+  i.startsWith("Fideos de arroz") ? "fideos" :
+  i.startsWith("Alga nori") ? "nori" : null;
+const dspItem = k => DESPENSA.find(d=>d.k===k);
 const store = {
   get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
   set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
@@ -238,20 +287,32 @@ let rechazadas = store.get(K.rech,[]);
 let semana     = store.get(K.sem,[]);
 let feedback   = store.get(K.fb,{});
 let comprado   = store.get(K.comp,{});
+let tengo      = store.get(K.desp,{});
+
+/* Qué le falta de despensa a una receta, según lo que ya tiene */
+function faltantes(r){
+  const ks = new Set();
+  r.ing.forEach(x=>{ const k=CLAVE_ING(x.i); if(k && !tengo[k]) ks.add(k); });
+  return [...ks];
+}
 let mazo = [];
 
 function rearmaMazo(){
   mazo = RECETAS.filter(r=> !rechazadas.includes(r.id) && !semana.includes(r.id))
                 .map(r=>r.id);
   for(let i=mazo.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [mazo[i],mazo[j]]=[mazo[j],mazo[i]]; }
-  // las que ya cocinaste y te gustaron vuelven, pero no de primeras
-  mazo.sort((a,b)=>{ const fa=feedback[a], fb_=feedback[b];
-    return (fa?1:0)-(fb_?1:0); });
+  // primero lo que puede cocinar hoy; las ya cocinadas, de últimas
+  mazo.sort((a,b)=>{
+    const ra=receta(a), rb=receta(b);
+    const d = faltantes(ra).length - faltantes(rb).length;
+    if(d) return d;
+    return (feedback[a]?1:0) - (feedback[b]?1:0);
+  });
 }
 rearmaMazo();
 
 /* ---------- pestañas ---------- */
-const vistas = {descubrir:"v-descubrir", semana:"v-semana", mercado:"v-mercado"};
+const vistas = {descubrir:"v-descubrir", semana:"v-semana", mercado:"v-mercado", despensa:"v-despensa"};
 function abre(v){
   Object.entries(vistas).forEach(([k,id])=>{
     document.getElementById(id).hidden = k!==v;
@@ -260,6 +321,7 @@ function abre(v){
   document.getElementById("v-receta").hidden = true;
   if(v==="semana") pintaSemana();
   if(v==="mercado") pintaMercado();
+  if(v==="despensa") pintaDespensa();
   window.scrollTo({top:0});
 }
 Object.keys(vistas).forEach(k=> document.getElementById("tab-"+k).addEventListener("click",()=>abre(k)));
@@ -292,6 +354,14 @@ function pintaMazo(){
       c.appendChild(y);
     }
     c.appendChild(el("p","porque", r.porque));
+    const fal = faltantes(r);
+    if(fal.length){
+      const av = el("div","falta");
+      av.appendChild(document.createTextNode("Para esta te falta "));
+      av.appendChild(el("b",null, fal.map(k=>dspItem(k).n.split(" o ")[0].toLowerCase()).join(", ")));
+      av.appendChild(document.createTextNode(". La receta trae con qué reemplazarlo."));
+      c.appendChild(av);
+    }
     const prev = el("div","previa");
     prev.appendChild(el("b",null,"Lleva"));
     prev.appendChild(el("span",null, r.ing.slice(0,5).map(x=>x.i.split(",")[0].toLowerCase()).join(" · ")));
@@ -382,6 +452,16 @@ function abreReceta(id){
     f.tags.forEach(k=>{ if(AJUSTES[k]) co.appendChild(el("p",null,"· "+AJUSTES[k][1])); });
     if(f.nota_libre) co.appendChild(el("p",null,"· Tu nota: "+f.nota_libre));
     h.appendChild(co);
+  }
+
+  const fal = faltantes(r);
+  if(fal.length){
+    const sb = el("div","correcciones");
+    sb.appendChild(el("p",null,"Mientras no tengas todo de despensa:"));
+    fal.forEach(k=>{ const d=dspItem(k);
+      const l=el("p"); l.appendChild(el("b",null,"Sin "+d.n.split(" o ")[0].toLowerCase()+": "));
+      l.appendChild(document.createTextNode(d.sin)); sb.appendChild(l); });
+    h.appendChild(sb);
   }
 
   const bi = el("div","bloque");
@@ -512,6 +592,32 @@ document.getElementById("bRechazadas").addEventListener("click",()=>{
   }
 });
 
+/* ---------- despensa ---------- */
+function pintaDespensa(){
+  const $d = document.getElementById("despensa");
+  $d.textContent="";
+  DESPENSA.forEach(d=>{
+    const cuantas = RECETAS.filter(r=> r.ing.some(x=>CLAVE_ING(x.i)===d.k)).length;
+    const it = el("div","desp-item"+(tengo[d.k]?" ok":""));
+    const cb = el("input"); cb.type="checkbox"; cb.id="d_"+d.k; cb.checked=!!tengo[d.k];
+    cb.addEventListener("change",()=>{
+      tengo[d.k]=cb.checked; store.set(K.desp,tengo);
+      it.classList.toggle("ok",cb.checked);
+      rearmaMazo(); pintaMazo(); pintaDespensa();
+    });
+    const c = el("div","d");
+    const b = el("b",null,d.n); c.appendChild(b);
+    c.appendChild(el("em",null, d.orden+" · abre "+cuantas+(cuantas===1?" receta":" recetas")));
+    c.appendChild(el("span",null,d.donde));
+    c.appendChild(el("span",null,"Mientras tanto: "+d.sin));
+    it.append(cb,c); $d.appendChild(it);
+  });
+  const listas = RECETAS.filter(r=>!faltantes(r).length).length;
+  const p = el("p","nota");
+  p.textContent = "Con lo que tienes marcado puedes cocinar "+listas+" de las "+RECETAS.length+" recetas sin comprar nada de despensa.";
+  $d.appendChild(p);
+}
+
 /* ---------- mercado ---------- */
 function pintaMercado(){
   const $m = document.getElementById("mercado");
@@ -529,10 +635,12 @@ function pintaMercado(){
   const grupos = {0:[],1:[]};
   Object.entries(suma).forEach(([clave,cant])=>{
     const [i,u,d] = clave.split("|");
+    const k = CLAVE_ING(i);
+    if(k && tengo[k]) return;           // ya lo tiene en la despensa
     grupos[d].push({i,u,cant,clave});
   });
   const titulos = {0:["En el barrio","Tienda, fruver y carnicería. Se compra para los días que vas a cocinar."],
-                   1:["Despensa","Se compra una vez y dura meses. Tamari, miso y fideos de arroz no están en toda tienda: una sola vuelta a un supermercado grande o a una tienda asiática resuelve el año."]};
+                   1:["Despensa","Solo aparece lo que todavía no has marcado en la pestaña Despensa. No hace falta comprarlo todo junto."]};
 
   [0,1].forEach(d=>{
     if(!grupos[d].length) return;
