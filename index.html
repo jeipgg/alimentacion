@@ -224,7 +224,7 @@ footer{border-top:1px solid var(--line-2); padding-top:14px; margin-top:26px; fo
     <button class="mando chico" id="bLuego" title="Ahora no, muéstramela después" aria-label="Después">↺</button>
     <button class="mando si" id="bSi" title="Esta sí" aria-label="Aceptar">✓</button>
   </div>
-  <p class="pista">Arrastra la tarjeta, o usa los botones. Izquierda la descarta para siempre; el circulito la manda al final del mazo.</p>
+  <p class="pista">Cada tarjeta es un plato completo para dos: proteína, almidón y vegetal ya van dentro. Los acompañamientos son opcionales y tienen su propio mazo, arriba. Arrastra o usa los botones: izquierda descarta para siempre, el circulito manda al final del mazo.</p>
 </div>
 
 <div id="v-receta" hidden></div>
@@ -269,14 +269,13 @@ const DESPENSA = [
   {k:"maizena",  n:"Maizena",            g:"b", donde:"", sin:"Harina de arroz. No sirve harina de trigo."},
   {k:"ajopolvo", n:"Ajo en polvo",       g:"b", donde:"", sin:"Ajo fresco, dorado y retirado."},
   {k:"comino",   n:"Comino",             g:"b", donde:"", sin:"Déjalo por fuera."},
+  {k:"ajonjoli", n:"Ajonjolí",           g:"b", donde:"", sin:"Maní picado grueso, que hace un crujiente parecido."},
 
   // --- lo que hay que comprar, en orden de cuánto abre ---
   {k:"tamari",   n:"Tamari o salsa de soya sin gluten", g:"c",
    donde:"Supermercado grande, sección internacional. Un frasco dura casi un año.",
    sin:"Sal y un chorrito de vinagre blanco al final. Queda distinto, pero el plato funciona."},
-  {k:"ajonjoli", n:"Ajonjolí", g:"c",
-   donde:"Tienda de barrio o fruver. Barato y dura meses en frasco cerrado.",
-   sin:"Maní picado grueso, que hace un crujiente parecido."},
+
   {k:"vinarroz", n:"Vinagre de arroz", g:"c",
    donde:"Supermercado grande, al lado del tamari.",
    sin:"Vinagre blanco, la mitad de la cantidad: es bastante más fuerte."},
@@ -329,11 +328,10 @@ let rechazadas = store.get(K.rech,[]);
 let semana     = store.get(K.sem,[]);
 let feedback   = store.get(K.fb,{});
 let comprado   = store.get(K.comp,{});
-let tengo      = store.get(K.desp, null);
-if(tengo === null){                      // primera vez: los básicos se asumen en la cocina
-  tengo = {}; DESPENSA.forEach(d=>{ if(d.g==="b") tengo[d.k]=true; });
-  store.set(K.desp,tengo);
-}
+let tengo      = store.get(K.desp, null) || {};
+// Los básicos que nunca has tocado se asumen en la cocina. Si los destildaste, se respeta.
+DESPENSA.forEach(d=>{ if(d.g==="b" && tengo[d.k]===undefined) tengo[d.k]=true; });
+store.set(K.desp,tengo);
 
 /* Qué le falta de despensa a una receta, según lo que ya tiene */
 function faltantes(r){
@@ -344,7 +342,7 @@ function faltantes(r){
 let mazo = [];
 
 /* Antes de mediodía se cocina para el almuerzo; de ahí en adelante, para la cena. */
-const MOMENTOS = [["almuerzo","Almuerzo"],["cena","Cena"],["desayuno","Desayuno"],["todo","Todo"]];
+const MOMENTOS = [["almuerzo","Almuerzo"],["cena","Cena"],["desayuno","Desayuno"],["acomp","Acompañar"],["todo","Todo"]];
 /* La hora solo propone por dónde empezar; si ya elegiste, manda tu elección. */
 function momentoPorHora(){ return new Date().getHours() < 12 ? "almuerzo" : "cena"; }
 const elegido = store.get("alim.modo", null);
@@ -354,7 +352,8 @@ let porHora = !elegido;
 function entra(r){
   if(modo==="todo") return true;
   if(modo==="desayuno") return r.mom==="desayuno";
-  return r.mom===modo || r.mom==="ambos" || r.mom==="acomp";
+  if(modo==="acomp")    return r.mom==="acomp";
+  return r.mom===modo || r.mom==="ambos";   // los acompañamientos tienen su propio mazo
 }
 
 function rearmaMazo(){
@@ -364,7 +363,7 @@ function rearmaMazo(){
   // primero lo que puede cocinar hoy; las ya cocinadas, de últimas
   mazo.sort((a,b)=>{
     const ra=receta(a), rb=receta(b);
-    const ac = (ra.mom==="acomp"?1:0) - (rb.mom==="acomp"?1:0);   // los platos antes que los acompañamientos
+    const ac = (ra.mom==="acomp"?1:0) - (rb.mom==="acomp"?1:0);   // en «Todo», los platos primero
     if(ac) return ac;
     const d = faltantes(ra).length - faltantes(rb).length;         // lo cocinable hoy, primero
     if(d) return d;
@@ -406,7 +405,7 @@ function pintaMazo(){
     const pos = arr.length-1-idx;
     const c = el("div","card"+(pos===1?" atras":pos===2?" atras2":""));
     c.dataset.id = id;
-    c.appendChild(el("div","min", r.min+" min · "+r.base));
+    c.appendChild(el("div","min", r.min+" min · "+(r.mom==="acomp" ? "acompañamiento" : "plato completo para dos")));
     c.appendChild(el("h2",null,r.n));
     const f = feedback[id];
     if(f){
@@ -425,8 +424,11 @@ function pintaMazo(){
       c.appendChild(av);
     }
     const prev = el("div","previa");
-    prev.appendChild(el("b",null,"Lleva"));
-    prev.appendChild(el("span",null, r.ing.slice(0,5).map(x=>x.i.split(",")[0].toLowerCase()).join(" · ")));
+    prev.appendChild(el("b",null, r.mom==="acomp" ? "Lleva" : "El plato entero"));
+    const basico = new Set(["sal","aceite","ajopolvo","comino","maizena","palillos"]);
+    prev.appendChild(el("span",null, r.ing
+      .filter(x=>{ const k=CLAVE_ING(x.i); return !k || !basico.has(k); })
+      .map(x=>x.i.split(",")[0].split(" en ")[0].toLowerCase()).join(" · ")));
     c.appendChild(prev);
     const tg = el("div","tags");
     r.tag.forEach(t=> tg.appendChild(el("span","tag",t)));
