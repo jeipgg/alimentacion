@@ -1,6 +1,7 @@
 /* recetas.js — corpus. Porción A = menor, porción B = 20 % mayor (proteína y almidón).
    Sin horno · sin gluten · sin lácteos · sin legumbres · sin pimentón · sin crucíferas ·
-   sin mariscos ni salsa de pescado · sin limón · sin sopas ni nada húmedo · sin recalentados.
+   sin mariscos ni salsa de pescado · sin limón · sin sopas ni nada húmedo · sin recalentados ·
+   sin huevo con tomate, que le dispara el reflujo.
    d:1 = despensa, se compra una vez y dura meses. d:0 = tienda, fruver o carnicería del barrio. */
 
 window.AJUSTES = {
@@ -129,19 +130,6 @@ window.RECETAS = [
         "Zanahoria dos minutos.",
         "Salsa al final, un minuto de fuego para que brille y espese."],
  crispy:"La fécula en la carne también espesa la salsa. No necesitas nada más."},
-
-{id:"huevo-tomate", mom:"cena", n:"Huevo y tomate salteados, versión seca", min:20, base:"huevo", tag:["sartén","rápido","económico"],
- porque:"El clásico chino, ajustado: el original queda caldoso y aquí va escurrido y firme.",
- ing:[{i:"Huevos",a:3,b:4,u:"und"},{i:"Tomate maduro en gajos",a:2,b:2,u:"und"},
-      {i:"Cebolla larga verde",a:2,b:2,u:"tallos"},{i:"Tamari",a:1,b:1,u:"cda",d:1},
-      {i:"Aceite de oliva",a:2,b:2,u:"cda"},{i:"Arroz blanco crudo",a:60,b:75,u:"g"}],
- pasos:["Saca las semillas y el agua del tomate con una cuchara. Ese paso es el que cambia la textura.",
-        "Bate los huevos y cuájalos en sartén caliente hasta que estén firmes, no cremosos. Sácalos.",
-        "Tomate a fuego alto dos minutos, hasta que pierda el agua.",
-        "Devuelve el huevo, tamari, cebolla larga y fuera."],
- crispy:"Huevo firme con borde dorado. Si queda baboso, es fuego bajo.",
- ojo:"Despesemillar el tomate no es opcional: es lo que evita el plato húmedo."},
-
 {id:"cucayo-huevo", mom:"almuerzo", n:"Arroz con cucayo y huevo crocante", min:30, base:"huevo", tag:["cucayo","económico","seguro"],
  porque:"Tu comida segura, que resulta ser la misma técnica del nurungji coreano. El punto de partida cuando no hay ánimo de experimentar.",
  ing:[{i:"Arroz blanco crudo",a:70,b:85,u:"g"},{i:"Huevos",a:2,b:3,u:"und"},
@@ -520,19 +508,6 @@ window.RECETAS = [
         "Pollo desmechado, dos minutos, hasta que las hebras doren.",
         "Arroz frío extendido, dos minutos quieto. Sal, cebolla larga y ajonjolí fuera del fuego."],
  crispy:"El arroz tiene que estar frío. Tibio se apelmaza y queda mazacote."},
-
-{id:"huevos-tomate-larga", mom:"desayuno", n:"Huevos firmes con tomate y cebolla larga", min:15, base:"huevo", tag:["rápido","sin despensa","económico"],
- porque:"Desayuno de quince minutos. Importa porque desayunar no es opcional en esta casa.",
- ing:[{i:"Huevos",a:2,b:3,u:"und"},{i:"Tomate maduro",a:1,b:1,u:"und"},
-      {i:"Cebolla larga verde",a:2,b:2,u:"tallos"},{i:"Arepa de maíz",a:1,b:1,u:"und"},
-      {i:"Aguacate",a:0.5,b:0.5,u:"und"},{i:"Sal",a:1,b:1,u:"pizca"},{i:"Aceite de oliva",a:1,b:1,u:"cda"}],
- pasos:["Quítale semillas y agua al tomate y pícalo en cubos.",
-        "Sofríe el tomate a fuego alto dos minutos, hasta que pierda el agua.",
-        "Echa los huevos batidos y revuelve hasta que estén firmes, nunca cremosos.",
-        "Cebolla larga fuera del fuego. Arepa tostada y aguacate al lado."],
- crispy:"Tomate sin semillas y fuego alto. Es lo que evita el revuelto aguado.",
- ojo:"Si hay pastilla en ayunas, este desayuno va 30–60 minutos después."},
-
 {id:"platano-ajonjoli", mom:"acomp", n:"Plátano maduro dorado con ajonjolí", min:20, base:"veg", tag:["acompañamiento","sin despensa","rápido"],
  porque:"Dulce natural, potasio y un acompañamiento que le va a casi todo lo de la carta.",
  ing:[{i:"Plátano maduro",a:1,b:1.5,u:"und"},{i:"Ajonjolí",a:1,b:1,u:"cda"},
